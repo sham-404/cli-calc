@@ -1,10 +1,10 @@
 use std::mem;
 
-pub fn to_postfix(infix: Vec<String>) -> Vec<String> {
+pub fn to_postfix(infix: &[String]) -> Vec<String> {
     let mut stack: Vec<&str> = Vec::new();
     let mut res: Vec<String> = Vec::new();
 
-    for item in &infix {
+    for item in infix {
         let ch = item.as_str();
         if ch == "(" {
             stack.push(ch);
@@ -37,10 +37,10 @@ pub fn to_postfix(infix: Vec<String>) -> Vec<String> {
     res
 }
 
-pub fn eval_postfix(postfix: Vec<String>) -> f64 {
+pub fn eval_postfix(postfix: &[String]) -> f64 {
     let mut stack: Vec<f64> = Vec::new();
 
-    for ch in &postfix {
+    for ch in postfix {
         if !is_operator(ch) {
             stack.push(ch.parse::<f64>().unwrap());
         } else {
