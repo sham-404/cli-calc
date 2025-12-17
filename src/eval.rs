@@ -1,8 +1,11 @@
-pub fn to_postfix(infix: Vec<&str>) -> Vec<&str> {
-    let mut stack: Vec<&str> = Vec::new();
-    let mut res: Vec<&str> = Vec::new();
+use std::mem;
 
-    for ch in infix {
+pub fn to_postfix(infix: Vec<String>) -> Vec<String> {
+    let mut stack: Vec<&str> = Vec::new();
+    let mut res: Vec<String> = Vec::new();
+
+    for item in &infix {
+        let ch = item.as_str();
         if ch == "(" {
             stack.push(ch);
         } else if ch == ")" {
@@ -10,13 +13,13 @@ pub fn to_postfix(infix: Vec<&str>) -> Vec<&str> {
                 if sym == "(" {
                     break;
                 }
-                res.push(sym as &str);
+                res.push(sym.to_string());
             }
         } else if is_operator(ch) {
             while let Some(&sym) = stack.last() {
                 if precedence(sym) >= precedence(ch) {
                     if let Some(val) = stack.pop() {
-                        res.push(val);
+                        res.push(val.to_string());
                     }
                 } else {
                     break;
@@ -24,20 +27,20 @@ pub fn to_postfix(infix: Vec<&str>) -> Vec<&str> {
             }
             stack.push(ch);
         } else {
-            res.push(ch);
+            res.push(ch.to_string());
         }
     }
     while let Some(ch) = stack.pop() {
-        res.push(ch);
+        res.push(ch.to_string());
     }
 
     res
 }
 
-pub fn eval_postfix(postfix: &[&str]) -> f64 {
+pub fn eval_postfix(postfix: Vec<String>) -> f64 {
     let mut stack: Vec<f64> = Vec::new();
 
-    for &ch in postfix {
+    for ch in &postfix {
         if !is_operator(ch) {
             stack.push(ch.parse::<f64>().unwrap());
         } else {
@@ -48,6 +51,25 @@ pub fn eval_postfix(postfix: &[&str]) -> f64 {
         }
     }
     stack.pop().unwrap()
+}
+
+pub fn tokenize(input: &str) -> Vec<String> {
+    let mut token: Vec<String> = Vec::new();
+    let mut num: String = String::new();
+
+    for ch in input.chars() {
+        if ch.is_numeric() || ch == '.' {
+            num.push(ch);
+        } else {
+            token.push(mem::take(&mut num));
+            token.push(ch.to_string());
+        }
+    }
+    if !num.is_empty() {
+        token.push(num);
+    }
+
+    token
 }
 
 fn compute(a: f64, b: f64, ch: &str) -> f64 {
