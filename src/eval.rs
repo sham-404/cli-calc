@@ -1,22 +1,19 @@
-use std::collections::HashSet;
+pub fn to_postfix(infix: Vec<&str>) -> Vec<&str> {
+    let mut stack: Vec<&str> = Vec::new();
+    let mut res: Vec<&str> = Vec::new();
 
-pub fn to_postfix(infix: &String) -> Vec<char> {
-    let mut stack: Vec<char> = Vec::new();
-    let mut res: Vec<char> = Vec::new();
-    let operators: HashSet<char> = ['+', '-', '*', '/', '^'].into_iter().collect();
-
-    for ref ch in infix.chars() {
-        if ch == &'(' {
-            stack.push(*ch);
-        } else if ch == &')' {
+    for ch in infix {
+        if ch == "(" {
+            stack.push(ch);
+        } else if ch == ")" {
             while let Some(sym) = stack.pop() {
-                if sym == '(' {
+                if sym == "(" {
                     break;
                 }
-                res.push(sym);
+                res.push(sym as &str);
             }
-        } else if operators.contains(ch) {
-            while let Some(sym) = stack.last() {
+        } else if is_operator(ch) {
+            while let Some(&sym) = stack.last() {
                 if precedence(sym) >= precedence(ch) {
                     if let Some(val) = stack.pop() {
                         res.push(val);
@@ -25,27 +22,40 @@ pub fn to_postfix(infix: &String) -> Vec<char> {
                     break;
                 }
             }
-            stack.push(*ch);
-        } else if ch.is_alphabetic() {
-            res.push(*ch);
+            stack.push(ch);
+        } else {
+            res.push(ch);
         }
     }
-    while !stack.is_empty() {
-        res.push(stack.pop().unwrap());
+    while let Some(ch) = stack.pop() {
+        res.push(ch);
     }
 
     res
 }
 
-fn precedence(c: &char) -> i16 {
+pub fn _eval_postfix(postfix: &[&str]) -> f64 {
+    let mut stack: Vec<f64> = Vec::new();
+
+    for &ch in postfix {
+        if !is_operator(ch) {
+        } else {
+        }
+    }
+
+    0.0
+}
+
+fn precedence(c: &str) -> i16 {
     match c {
-        '^' => 5,
-        '/' => 3,
-        '*' => 3,
-        '-' => 1,
-        '+' => 1,
+        "^" => 5,
+        "/" | "*" => 3,
+        "+" | "-" => 1,
         _ => 0,
     }
 }
 
+fn is_operator(op: &str) -> bool {
+    matches!(op, "+" | "-" | "*" | "/" | "^")
+}
 // a + b * (c / d)
