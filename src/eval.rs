@@ -1,25 +1,73 @@
-use std::mem;
+use crate::tokens::Token;
 
-pub fn to_postfix(infix: &[String]) -> Vec<String> {
-    let mut stack: Vec<&str> = Vec::new();
-    let mut res: Vec<String> = Vec::new();
+pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
+    let mut token: Vec<Token> = Vec::new();
+    let mut num: String = String::new();
 
-    for item in infix {
-        let ch = item.as_str();
-        if ch == "(" {
+    for ch in input.chars() {
+        if ch.is_numeric() || ch == '.' {
+            num.push(ch);
+        } else {
+            if !num.is_empty() {
+                match to_num(&num) {
+                    Ok(val) => token.push(Token::Number(val)),
+                    Err(err) => eprintln!("{}", err),
+                }
+                num.clear();
+            }
+            match Token::match_symbol(ch) {
+                Ok(op) => token.push(op),
+                Err(err) => eprintln!("{}", err),
+            }
+        }
+    }
+    if !num.is_empty() {
+        match to_num(&num) {
+            Ok(val) => token.push(Token::Number(val)),
+            Err(err) => eprintln!("{}", err),
+        }
+    }
+
+    Ok(token)
+}
+
+pub fn parser(tokens: Vec<Token>) -> Result<Vec<Token>, String> {
+    let mut res: Vec<Token> = Vec::new();
+
+    for token in tokens {
+        if token.is_operator() {
+            if let Some(item) = res.last() {
+                if !item.is_num() {
+                    let sign = res.pop();
+                    if matches!(sign.unwrap(), Token::Minus) {}
+                    res.push(token);
+                }
+            }
+        }
+    }
+
+    Ok(res)
+}
+
+pub fn to_postfix(infix: &[Token]) -> Vec<Token> {
+    let mut stack: Vec<&Token> = Vec::new();
+    let mut res: Vec<Token> = Vec::new();
+
+    for ch in infix {
+        if matches!(ch, Token::LParan) {
             stack.push(ch);
-        } else if ch == ")" {
+        } else if matches!(ch, Token::RParan) {
             while let Some(sym) = stack.pop() {
-                if sym == "(" {
+                if matches!(sym, Token::LParan) {
                     break;
                 }
-                res.push(sym.to_string());
+                res.push(sym.clone());
             }
-        } else if is_operator(ch) {
+        } else if ch.is_operator() {
             while let Some(&sym) = stack.last() {
-                if precedence(sym) >= precedence(ch) {
+                if sym.precedence() >= ch.precedence() {
                     if let Some(val) = stack.pop() {
-                        res.push(val.to_string());
+                        res.push(val.clone());
                     }
                 } else {
                     break;
@@ -27,72 +75,57 @@ pub fn to_postfix(infix: &[String]) -> Vec<String> {
             }
             stack.push(ch);
         } else {
-            res.push(ch.to_string());
+            res.push(ch.clone());
         }
     }
     while let Some(ch) = stack.pop() {
-        res.push(ch.to_string());
+        res.push(ch.clone());
     }
 
     res
 }
 
-pub fn eval_postfix(postfix: &[String]) -> f64 {
-    let mut stack: Vec<f64> = Vec::new();
+pub fn eval_postfix(postfix: &[Token]) -> f64 {
+    let mut stack: Vec<Token> = Vec::new();
 
     for ch in postfix {
-        if !is_operator(ch) {
-            stack.push(ch.parse::<f64>().unwrap());
+        if !ch.is_operator() {
+            stack.push(ch.clone());
         } else {
             let a = stack.pop().unwrap();
             let b = stack.pop().unwrap();
 
-            stack.push(compute(a, b, ch));
+            stack.push(compute(&a, &b, ch));
         }
     }
-    stack.pop().unwrap()
+    let ans = match stack.pop().unwrap() {
+        Token::Number(n) => n,
+        _ => panic!("Unexpected error at eval_postfix()"),
+    };
+
+    ans
 }
 
-pub fn tokenize(input: &str) -> Vec<String> {
-    let mut token: Vec<String> = Vec::new();
-    let mut num: String = String::new();
+fn compute(a: &Token, b: &Token, ch: &Token) -> Token {
+    let (x, y) = match (a, b) {
+        (Token::Number(n1), Token::Number(n2)) => (*n1, *n2),
+        _ => panic!("Unexpected error at comput()"),
+    };
 
-    for ch in input.chars() {
-        if ch.is_numeric() || ch == '.' {
-            num.push(ch);
-        } else {
-            token.push(mem::take(&mut num));
-            token.push(ch.to_string());
-        }
-    }
-    if !num.is_empty() {
-        token.push(num);
-    }
-
-    token
-}
-
-fn compute(a: f64, b: f64, ch: &str) -> f64 {
-    match ch {
-        "^" => b.powf(a),
-        "*" => b * a,
-        "/" => b / a,
-        "+" => b + a,
-        "-" => b - a,
+    let res = match ch {
+        Token::Pow => y.powf(x),
+        Token::Mul => y * x,
+        Token::Div => y / x,
+        Token::Plus => y + x,
+        Token::Minus => y - x,
         _ => 0.0,
-    }
+    };
+
+    Token::Number(res)
 }
 
-fn precedence(c: &str) -> i16 {
-    match c {
-        "^" => 5,
-        "/" | "*" => 3,
-        "+" | "-" => 1,
-        _ => 0,
-    }
+fn to_num(n: &str) -> Result<f64, String> {
+    n.parse::<f64>().map_err(|_| "Invalid syntax".to_string())
 }
 
-fn is_operator(op: &str) -> bool {
-    matches!(op, "+" | "-" | "*" | "/" | "^")
-}
 // a + b * (c / d)

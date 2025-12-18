@@ -1,16 +1,18 @@
 mod eval;
+mod tokens;
 
-use eval::eval_postfix;
-use eval::to_postfix;
-use eval::tokenize;
+use crate::eval::{eval_postfix, lexer, to_postfix};
 
 fn main() {
-    let a: Vec<String> = vec!["23", "+", "5", "/", "(", "45.2", "-", "90", ")"]
-        .iter()
-        .map(|ch| ch.to_string())
-        .collect();
+    let input = "3-(2)";
+    println!("Input: {input:?}");
 
-    println!("{:?}", to_postfix(&a));
-    println!("{}", eval_postfix(&to_postfix(&a)));
-    println!("{}", eval_postfix(&to_postfix(&tokenize("4.34+5"))));
+    let lex = lexer(input).unwrap();
+    println!("lex: {lex:?}");
+
+    let postfix = to_postfix(&lex);
+    println!("Postfix: {postfix:?}");
+
+    let res = eval_postfix(&postfix);
+    println!("Result: {res}");
 }
