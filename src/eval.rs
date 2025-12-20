@@ -1,7 +1,7 @@
 use crate::tokens::Token;
 
 pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
-    let mut token: Vec<Token> = Vec::new();
+    let mut token_arr: Vec<Token> = Vec::new();
     let mut num: String = String::new();
 
     for ch in input.chars() {
@@ -9,41 +9,110 @@ pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
             num.push(ch);
         } else {
             if !num.is_empty() {
-                match to_num(&num) {
-                    Ok(val) => token.push(Token::Number(val)),
-                    Err(err) => eprintln!("{}", err),
-                }
+                token_arr.push(Token::Number(to_num(&num)?));
                 num.clear();
             }
-            match Token::match_symbol(ch) {
-                Ok(op) => token.push(op),
-                Err(err) => eprintln!("{}", err),
-            }
+            token_arr.push(Token::match_symbol(ch)?);
         }
     }
     if !num.is_empty() {
-        match to_num(&num) {
-            Ok(val) => token.push(Token::Number(val)),
-            Err(err) => eprintln!("{}", err),
-        }
+        token_arr.push(Token::Number(to_num(&num)?));
     }
 
-    Ok(token)
+    Ok(token_arr)
 }
 
-pub fn parser(tokens: Vec<Token>) -> Result<Vec<Token>, String> {
+pub fn parser(tokens: &[Token]) -> Result<Vec<Token>, String> {
     let mut res: Vec<Token> = Vec::new();
+    let mut append_minus: bool = false;
 
     for token in tokens {
+        // Handling unary '-' (Token::Minus)
+        if append_minus {
+            append_minus = false;
+            if !token.is_num() {
+                return Err("Needed valid number after unary minus '-'".to_string());
+            }
+
+            let n: f64 = match token {
+                &Token::Number(val) => val,
+                _ => return Err("Unexpected Error occured at parser()!".to_string()),
+            };
+
+            res.push(Token::Number(-n));
+            continue;
+        }
+
         if token.is_operator() {
-            if let Some(item) = res.last() {
-                if !item.is_num() {
-                    let sign = res.pop();
-                    if matches!(sign.unwrap(), Token::Minus) {}
-                    res.push(token);
+            if matches!(token, Token::Minus) {
+                let last_item = res.last();
+
+                match last_item {
+                    Some(item) => {
+                        if !matches!(item, Token::RParan | Token::Number(_)) {
+                            append_minus = true;
+                            continue;
+                        }
+                    }
+                    None => {
+                        append_minus = true;
+                        continue;
+                    }
+                }
+            } else if matches!(token, Token::Plus) {
+                let last_item = res.last();
+
+                match last_item {
+                    Some(item) => {
+                        if !matches!(item, Token::RParan | Token::Number(_)) {
+                            continue;
+                        }
+                    }
+                    None => continue,
                 }
             }
         }
+
+        if matches!(token, Token::LParan) {
+            let last_item = res.last();
+
+            match last_item {
+                Some(item) => {
+                    if matches!(item, Token::Number(_)) {
+                        res.push(Token::Mul);
+                    }
+                }
+                None => {}
+            }
+        }
+
+        if matches!(token, Token::RParan) {
+            let last_item = res.last();
+
+            match last_item {
+                Some(item) => {
+                    if item.is_operator() {
+                        return Err(format!("Invalid Syntax! Operator before ')'"));
+                    }
+                }
+                None => return Err("Invalid Syntax!".to_string()),
+            }
+        }
+
+        if matches!(token, Token::Number(_)) {
+            let last_item = res.last();
+
+            match last_item {
+                Some(item) => {
+                    if matches!(item, Token::RParan) {
+                        res.push(Token::Mul);
+                    }
+                }
+                None => {}
+            }
+        }
+
+        res.push(token.clone());
     }
 
     Ok(res)
