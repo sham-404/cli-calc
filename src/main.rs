@@ -16,22 +16,24 @@ fn main() {
     match args[1].as_str() {
         "-c" => match args.get(3) {
             Some(param) => calculate(&args[2], &param),
-            None => calculate(&args[2], &"null".to_string()),
+            None => calculate(&args[2], "null"),
         },
-        _ => println!("Unexpected bug"),
+        _ => eprintln!("Invalid mode"),
     }
 }
 
 fn calculate(exp: &String, param: &str) {
-    let input = exp;
-    let lex = match lexer(input) {
+    let input = exp.replace(" ", "");
+    let lex = match lexer(&input) {
         Ok(lex) => lex,
         Err(err) => return eprintln!("{err}"),
     };
+
     let parsed = match parser(&lex) {
         Ok(parse) => parse,
         Err(err) => return eprintln!("{err}"),
     };
+
     let postfix = to_postfix(&parsed);
     let res = eval_postfix(&postfix);
 
