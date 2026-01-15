@@ -1,5 +1,3 @@
-use core::f64;
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Number(f64),
@@ -10,6 +8,12 @@ pub enum Token {
     Pow,
     LParan,
     RParan,
+    Sin(f64),
+    Cos(f64),
+    Tan(f64),
+    Cot(f64),
+    Sec(f64),
+    Cosec(f64),
 }
 
 impl Token {
@@ -22,6 +26,19 @@ impl Token {
 
     pub fn is_num(&self) -> bool {
         matches!(self, Token::Number(_))
+    }
+
+    pub fn match_trig(item: &str, num: f64) -> Result<Token, String> {
+        let token = match item {
+            "sin" => Token::Sin(num),
+            "cos" => Token::Cos(num),
+            "tan" => Token::Tan(num),
+            "cot" => Token::Cot(num),
+            "cosec" => Token::Cosec(num),
+            "sec" => Token::Sec(num),
+            _ => return Err("Invalid Named function".to_string()),
+        };
+        Ok(token)
     }
 
     pub fn match_symbol(ch: char) -> Result<Token, String> {

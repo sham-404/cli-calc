@@ -3,21 +3,75 @@ use crate::tokens::Token;
 pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
     let mut token_arr: Vec<Token> = Vec::new();
     let mut num: String = String::new();
+    let mut word: String = String::new();
+    let mut iter = input.chars().peekable();
 
-    for ch in input.chars() {
+    while let Some(ch) = iter.next() {
         if ch.is_numeric() || ch == '.' {
+            // Handling numbers
+
             num.push(ch);
-        } else {
-            if !num.is_empty() {
-                token_arr.push(Token::Number(to_num(&num)?));
-                num.clear();
+            loop {
+                match iter.peek() {
+                    Some(v) if v.is_numeric() || *v == '.' => {
+                        num.push(iter.next().unwrap());
+                    }
+                    _ => break,
+                }
             }
+            token_arr.push(Token::Number(to_num(&num)?));
+            num.clear();
+        } else if ch.is_alphabetic() {
+            // Handling trig functions
+
+            word.push(ch);
+            loop {
+                match iter.peek() {
+                    Some(v) if v.is_alphabetic() => {
+                        word.push(iter.next().unwrap());
+                    }
+                    _ => break,
+                }
+            }
+            if let Some(val) = iter.next() {
+                if val == '(' {
+                    loop {
+                        match iter.peek() {
+                            Some(v) if v.is_numeric() || *v == '.' => {
+                                num.push(iter.next().unwrap());
+                            }
+                            _ => break,
+                        }
+                    }
+                } else {
+                    return Err("Invalid syntax".to_string());
+                }
+            }
+            token_arr.push(Token::match_trig(&word, to_num(&num)?)?);
+        } else {
             token_arr.push(Token::match_symbol(ch)?);
         }
     }
-    if !num.is_empty() {
-        token_arr.push(Token::Number(to_num(&num)?));
-    }
+
+    // for ch in input.chars() {
+    //     if ch.is_numeric() || ch == '.' {
+    //         num.push(ch);
+    //     } else {
+    //         if !num.is_empty() {
+    //             token_arr.push(Token::Number(to_num(&num)?));
+    //             num.clear();
+    //         }
+    //
+    //         if ch.is_alphabetic() {
+    //             word.push(ch);
+    //         } else {
+    //             token_arr.push(Token::match_symbol(ch)?);
+    //         }
+    //     }
+    // }
+    // if !num.is_empty() {
+    //     token_arr.push(Token::Number(to_num(&num)?));
+    // }
 
     Ok(token_arr)
 }
