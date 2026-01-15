@@ -223,6 +223,12 @@ pub fn eval_postfix(postfix: &[Token]) -> f64 {
     }
     let ans = match stack.pop().unwrap() {
         Token::Number(n) => n,
+        Token::Sin(n) => n.sin(),
+        Token::Cos(n) => n.cos(),
+        Token::Tan(n) => n.tan(),
+        Token::Cot(n) => n.atan(),
+        Token::Cosec(n) => n.asin(),
+        Token::Sec(n) => n.acos(),
         _ => panic!("Unexpected error at eval_postfix()"),
     };
 
@@ -242,7 +248,6 @@ fn compute(a: &Token, b: &Token, ch: &Token) -> Token {
     };
 
     let y = match b {
-        Token::Number(n) => *n,
         Token::Number(n) => *n,
         Token::Sin(n) => n.sin(),
         Token::Cos(n) => n.cos(),
