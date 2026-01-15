@@ -230,8 +230,26 @@ pub fn eval_postfix(postfix: &[Token]) -> f64 {
 }
 
 fn compute(a: &Token, b: &Token, ch: &Token) -> Token {
-    let (x, y) = match (a, b) {
-        (Token::Number(n1), Token::Number(n2)) => (*n1, *n2),
+    let x = match a {
+        Token::Number(n) => *n,
+        Token::Sin(n) => n.sin(),
+        Token::Cos(n) => n.cos(),
+        Token::Tan(n) => n.tan(),
+        Token::Cot(n) => n.atan(),
+        Token::Cosec(n) => n.asin(),
+        Token::Sec(n) => n.acos(),
+        _ => panic!("Unexpected error at comput()"),
+    };
+
+    let y = match b {
+        Token::Number(n) => *n,
+        Token::Number(n) => *n,
+        Token::Sin(n) => n.sin(),
+        Token::Cos(n) => n.cos(),
+        Token::Tan(n) => n.tan(),
+        Token::Cot(n) => n.atan(),
+        Token::Cosec(n) => n.asin(),
+        Token::Sec(n) => n.acos(),
         _ => panic!("Unexpected error at comput()"),
     };
 
