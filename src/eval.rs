@@ -1,5 +1,3 @@
-use std::panic;
-
 use crate::tokens::Token;
 
 pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
@@ -9,13 +7,13 @@ pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
     let mut iter = input.chars().peekable();
 
     while let Some(ch) = iter.next() {
-        if ch.is_numeric() || ch == '.' {
+        if ch.is_ascii_digit() || ch == '.' {
             // Handling numbers
 
             num.push(ch);
             loop {
                 match iter.peek() {
-                    Some(v) if v.is_numeric() || *v == '.' => {
+                    Some(v) if v.is_ascii_digit() || *v == '.' => {
                         num.push(iter.next().unwrap());
                     }
                     _ => break,
@@ -214,9 +212,9 @@ fn compute_trig(num: &Token, trig_func: &Token) -> Token {
         Token::Sin => n.sin(),
         Token::Cos => n.cos(),
         Token::Tan => n.tan(),
-        Token::Cot => n.atan(),
-        Token::Cosec => n.asin(),
-        Token::Sec => n.acos(),
+        Token::Cot => 1.0 / n.tan(),
+        Token::Cosec => 1.0 / n.sin(),
+        Token::Sec => 1.0 / n.cos(),
         _ => panic!("Unexpected token mismatch in compute_trig"),
     };
     Token::Number(ans)
