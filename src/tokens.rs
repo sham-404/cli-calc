@@ -8,19 +8,35 @@ pub enum Token {
     Pow,
     LParan,
     RParan,
-    Sin(f64),
-    Cos(f64),
-    Tan(f64),
-    Cot(f64),
-    Sec(f64),
-    Cosec(f64),
+    Sin,
+    Cos,
+    Tan,
+    Cot,
+    Sec,
+    Cosec,
 }
 
 impl Token {
     pub fn is_operator(&self) -> bool {
         matches!(
             self,
-            Token::Pow | Token::Div | Token::Mul | Token::Plus | Token::Minus
+            Token::Pow
+                | Token::Div
+                | Token::Mul
+                | Token::Plus
+                | Token::Minus
+                | Token::Sin
+                | Token::Cos
+                | Token::Tan
+                | Token::Cot
+                | Token::Sec
+                | Token::Cosec
+        )
+    }
+    pub fn is_trig(&self) -> bool {
+        matches!(
+            self,
+            Token::Sin | Token::Cos | Token::Tan | Token::Cot | Token::Sec | Token::Cosec
         )
     }
 
@@ -28,14 +44,14 @@ impl Token {
         matches!(self, Token::Number(_))
     }
 
-    pub fn match_trig(item: &str, num: f64) -> Result<Token, String> {
+    pub fn match_trig(item: &str) -> Result<Token, String> {
         let token = match item {
-            "sin" => Token::Sin(num),
-            "cos" => Token::Cos(num),
-            "tan" => Token::Tan(num),
-            "cot" => Token::Cot(num),
-            "cosec" => Token::Cosec(num),
-            "sec" => Token::Sec(num),
+            "sin" => Token::Sin,
+            "cos" => Token::Cos,
+            "tan" => Token::Tan,
+            "cot" => Token::Cot,
+            "cosec" => Token::Cosec,
+            "sec" => Token::Sec,
             _ => return Err("Invalid Named function".to_string()),
         };
         Ok(token)
@@ -58,6 +74,7 @@ impl Token {
     pub fn precedence(&self) -> i16 {
         match self {
             Token::Pow => 5,
+            Token::Sin | Token::Cos | Token::Tan | Token::Cot | Token::Cosec | Token::Sec => 4,
             Token::Div | Token::Mul => 3,
             Token::Plus | Token::Minus => 1,
             _ => 0,

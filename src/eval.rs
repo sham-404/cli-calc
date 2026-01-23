@@ -1,3 +1,5 @@
+use std::panic;
+
 use crate::tokens::Token;
 
 pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
@@ -33,21 +35,23 @@ pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
                     _ => break,
                 }
             }
-            if let Some(val) = iter.next() {
-                if val == '(' {
-                    loop {
-                        match iter.peek() {
-                            Some(v) if v.is_numeric() || *v == '.' => {
-                                num.push(iter.next().unwrap());
-                            }
-                            _ => break,
-                        }
-                    }
-                } else {
-                    return Err("Invalid syntax".to_string());
-                }
-            }
-            token_arr.push(Token::match_trig(&word, to_num(&num)?)?);
+            // if let Some(val) = iter.next() {
+            //     if val == '(' {
+            //         loop {
+            //             match iter.peek() {
+            //                 Some(v) if v.is_numeric() || *v == '.' => {
+            //                     num.push(iter.next().unwrap());
+            //                 }
+            //                 _ => break,
+            //             }
+            //         }
+            //     } else {
+            //         return Err("Invalid syntax".to_string());
+            //     }
+            // }
+            println!("{word}");
+            token_arr.push(Token::match_trig(&word)?);
+            word.clear();
         } else {
             token_arr.push(Token::match_symbol(ch)?);
         }
@@ -215,6 +219,11 @@ pub fn eval_postfix(postfix: &[Token]) -> f64 {
         if !ch.is_operator() {
             stack.push(ch.clone());
         } else {
+            if ch.is_trig() {
+                let a = stack.pop().unwrap();
+                stack.push(compute_trig(&a, &ch));
+                continue;
+            }
             let a = stack.pop().unwrap();
             let b = stack.pop().unwrap();
 
@@ -223,38 +232,56 @@ pub fn eval_postfix(postfix: &[Token]) -> f64 {
     }
     let ans = match stack.pop().unwrap() {
         Token::Number(n) => n,
-        Token::Sin(n) => n.sin(),
-        Token::Cos(n) => n.cos(),
-        Token::Tan(n) => n.tan(),
-        Token::Cot(n) => n.atan(),
-        Token::Cosec(n) => n.asin(),
-        Token::Sec(n) => n.acos(),
+        // Token::Sin => n.sin(),
+        // Token::Cos => n.cos(),
+        // Token::Tan => n.tan(),
+        // Token::Cot => n.atan(),
+        // Token::Cosec => n.asin(),
+        // Token::Sec => n.acos(),
         _ => panic!("Unexpected error at eval_postfix()"),
     };
 
     ans
 }
 
+fn compute_trig(num: &Token, trig_func: &Token) -> Token {
+    let n = match num {
+        Token::Number(n) => *n,
+        _ => panic!("Not a valid number"),
+    };
+
+    let ans = match trig_func {
+        Token::Sin => n.sin(),
+        Token::Cos => n.cos(),
+        Token::Tan => n.tan(),
+        Token::Cot => n.atan(),
+        Token::Cosec => n.asin(),
+        Token::Sec => n.acos(),
+        _ => panic!("Unexpected token mismatch in compute_trig"),
+    };
+    Token::Number(ans)
+}
+
 fn compute(a: &Token, b: &Token, ch: &Token) -> Token {
     let x = match a {
         Token::Number(n) => *n,
-        Token::Sin(n) => n.sin(),
-        Token::Cos(n) => n.cos(),
-        Token::Tan(n) => n.tan(),
-        Token::Cot(n) => n.atan(),
-        Token::Cosec(n) => n.asin(),
-        Token::Sec(n) => n.acos(),
+        // Token::Sin(n) => n.sin(),
+        // Token::Cos(n) => n.cos(),
+        // Token::Tan(n) => n.tan(),
+        // Token::Cot(n) => n.atan(),
+        // Token::Cosec(n) => n.asin(),
+        // Token::Sec(n) => n.acos(),
         _ => panic!("Unexpected error at comput()"),
     };
 
     let y = match b {
         Token::Number(n) => *n,
-        Token::Sin(n) => n.sin(),
-        Token::Cos(n) => n.cos(),
-        Token::Tan(n) => n.tan(),
-        Token::Cot(n) => n.atan(),
-        Token::Cosec(n) => n.asin(),
-        Token::Sec(n) => n.acos(),
+        // Token::Sin(n) => n.sin(),
+        // Token::Cos(n) => n.cos(),
+        // Token::Tan(n) => n.tan(),
+        // Token::Cot(n) => n.atan(),
+        // Token::Cosec(n) => n.asin(),
+        // Token::Sec(n) => n.acos(),
         _ => panic!("Unexpected error at comput()"),
     };
 
