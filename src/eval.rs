@@ -35,47 +35,13 @@ pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
                     _ => break,
                 }
             }
-            // if let Some(val) = iter.next() {
-            //     if val == '(' {
-            //         loop {
-            //             match iter.peek() {
-            //                 Some(v) if v.is_numeric() || *v == '.' => {
-            //                     num.push(iter.next().unwrap());
-            //                 }
-            //                 _ => break,
-            //             }
-            //         }
-            //     } else {
-            //         return Err("Invalid syntax".to_string());
-            //     }
-            // }
-            println!("{word}");
+
             token_arr.push(Token::match_trig(&word)?);
             word.clear();
         } else {
             token_arr.push(Token::match_symbol(ch)?);
         }
     }
-
-    // for ch in input.chars() {
-    //     if ch.is_numeric() || ch == '.' {
-    //         num.push(ch);
-    //     } else {
-    //         if !num.is_empty() {
-    //             token_arr.push(Token::Number(to_num(&num)?));
-    //             num.clear();
-    //         }
-    //
-    //         if ch.is_alphabetic() {
-    //             word.push(ch);
-    //         } else {
-    //             token_arr.push(Token::match_symbol(ch)?);
-    //         }
-    //     }
-    // }
-    // if !num.is_empty() {
-    //     token_arr.push(Token::Number(to_num(&num)?));
-    // }
 
     Ok(token_arr)
 }
@@ -232,12 +198,6 @@ pub fn eval_postfix(postfix: &[Token]) -> f64 {
     }
     let ans = match stack.pop().unwrap() {
         Token::Number(n) => n,
-        // Token::Sin => n.sin(),
-        // Token::Cos => n.cos(),
-        // Token::Tan => n.tan(),
-        // Token::Cot => n.atan(),
-        // Token::Cosec => n.asin(),
-        // Token::Sec => n.acos(),
         _ => panic!("Unexpected error at eval_postfix()"),
     };
 
@@ -265,23 +225,11 @@ fn compute_trig(num: &Token, trig_func: &Token) -> Token {
 fn compute(a: &Token, b: &Token, ch: &Token) -> Token {
     let x = match a {
         Token::Number(n) => *n,
-        // Token::Sin(n) => n.sin(),
-        // Token::Cos(n) => n.cos(),
-        // Token::Tan(n) => n.tan(),
-        // Token::Cot(n) => n.atan(),
-        // Token::Cosec(n) => n.asin(),
-        // Token::Sec(n) => n.acos(),
         _ => panic!("Unexpected error at comput()"),
     };
 
     let y = match b {
         Token::Number(n) => *n,
-        // Token::Sin(n) => n.sin(),
-        // Token::Cos(n) => n.cos(),
-        // Token::Tan(n) => n.tan(),
-        // Token::Cot(n) => n.atan(),
-        // Token::Cosec(n) => n.asin(),
-        // Token::Sec(n) => n.acos(),
         _ => panic!("Unexpected error at comput()"),
     };
 
@@ -300,5 +248,3 @@ fn compute(a: &Token, b: &Token, ch: &Token) -> Token {
 fn to_num(n: &str) -> Result<f64, String> {
     n.parse::<f64>().map_err(|_| "Invalid syntax".to_string())
 }
-
-// a + b * (c / d)
