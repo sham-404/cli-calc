@@ -1,12 +1,27 @@
 mod eval;
 mod tokens;
+mod utils;
 
 use std::env;
 
 use crate::eval::{eval_postfix, lexer, parser, to_postfix};
+use utils::input;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    println!("");
+
+    if args.len() == 1 {
+        println!("Enter the calculations, type quit/exit to finish");
+        let mut buffer;
+
+        buffer = input("-> ");
+        while buffer != "exit" && buffer != "quit" {
+            calculate(&buffer, "null");
+            buffer = input("-> ");
+        }
+        return;
+    }
 
     if args.len() < 3 {
         println!("Example usage: calc <mode> <expression> <optional-parameters>");
@@ -35,9 +50,6 @@ fn calculate(exp: &String, param: &str) {
     };
 
     let postfix = to_postfix(&parsed);
-    println!("lex: {lex:?}");
-    println!("parser: {:?}", parsed);
-    println!("{:?}", postfix);
     let res = eval_postfix(&postfix);
 
     println!("{res}");
