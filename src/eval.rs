@@ -10,10 +10,26 @@ pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
         if ch.is_ascii_digit() || ch == '.' {
             // Handling numbers
 
+            let mut is_dot_found: bool;
+
+            if ch == '.' {
+                is_dot_found = true;
+            } else {
+                is_dot_found = false;
+            }
+
             num.push(ch);
             loop {
                 match iter.peek() {
                     Some(v) if v.is_ascii_digit() || *v == '.' => {
+                        if is_dot_found && *v == '.' {
+                            return Err("Found multiple decimal points in the number".to_string());
+                        }
+
+                        if *v == '.' {
+                            is_dot_found = true;
+                        }
+
                         num.push(iter.next().unwrap());
                     }
                     _ => break,
