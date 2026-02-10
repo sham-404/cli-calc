@@ -260,5 +260,6 @@ fn compute(a: &Token, b: &Token, ch: &Token) -> Token {
 }
 
 fn to_num(n: &str) -> Result<f64, String> {
-    n.parse::<f64>().map_err(|_| "Invalid syntax".to_string())
+    n.parse::<f64>()
+        .map_err(|_| "Invalid syntax, expected number here".to_string())
 }
