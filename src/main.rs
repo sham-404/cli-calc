@@ -18,6 +18,7 @@ fn main() {
         buffer = input("-> ");
         while buffer != "exit" && buffer != "quit" {
             calculate(&buffer, "null");
+            println!();
             buffer = input("-> ");
         }
         return;
@@ -53,7 +54,6 @@ fn calculate(exp: &String, param: &str) {
     let res = eval_postfix(&postfix);
 
     println!("{res}");
-    println!();
 
     match param {
         "debug" => {

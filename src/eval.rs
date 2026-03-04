@@ -23,7 +23,9 @@ pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
                 match iter.peek() {
                     Some(v) if v.is_ascii_digit() || *v == '.' => {
                         if is_dot_found && *v == '.' {
-                            return Err("Found multiple decimal points in the number".to_string());
+                            return Err(String::from(
+                                "Found multiple decimal points in the number",
+                            ));
                         }
 
                         if *v == '.' {
@@ -69,12 +71,12 @@ pub fn parser(tokens: &[Token]) -> Result<Vec<Token>, String> {
         if append_minus {
             append_minus = false;
             if !token.is_num() {
-                return Err("Needed valid number after unary minus '-'".to_string());
+                return Err(String::from("Needed valid number after unary minus '-'"));
             }
 
             let n: f64 = match token {
                 &Token::Number(val) => val,
-                _ => return Err("Unexpected Error occured at parser()!".to_string()),
+                _ => return Err(String::from("Unexpected Error occured at parser()!")),
             };
 
             res.push(Token::Number(-n));
@@ -239,12 +241,12 @@ fn compute_trig(num: &Token, trig_func: &Token) -> Token {
 fn compute(a: &Token, b: &Token, ch: &Token) -> Token {
     let x = match a {
         Token::Number(n) => *n,
-        _ => panic!("Unexpected error at comput()"),
+        _ => panic!("Unexpected error at compute()"),
     };
 
     let y = match b {
         Token::Number(n) => *n,
-        _ => panic!("Unexpected error at comput()"),
+        _ => panic!("Unexpected error at compute()"),
     };
 
     let res = match ch {
