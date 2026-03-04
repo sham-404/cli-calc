@@ -1,3 +1,5 @@
+use core::panic;
+
 use crate::tokens::Token;
 
 pub fn lexer(input: &str) -> Result<Vec<Token>, String> {
@@ -202,8 +204,26 @@ pub fn eval_postfix(postfix: &[Token]) -> f64 {
             stack.push(ch.clone());
         } else {
             if ch.is_trig() {
-                let a = stack.pop().unwrap();
-                stack.push(compute_trig(&a, &ch));
+                let mut num = match stack.pop().unwrap() {
+                    Token::Number(n) => Token::Number(n),
+                    _ => panic!("Invalid usage of Trig functions"),
+                };
+
+                if matches!(stack.last().unwrap(), Token::Deg | Token::Rad) {
+                    let unit = stack.pop().unwrap();
+
+                    let val = match unit {
+                        Token::Deg => match num {
+                            Token::Number(n) => Token::Number(n.to_radians()),
+                            _ => panic!("Expected number inside Trig fn"),
+                        },
+                        Token::Rad => num,
+                        _ => panic!("Expected number inside Trig fn"),
+                    };
+                    num = val;
+                }
+
+                stack.push(compute_trig(&num, &ch));
                 continue;
             }
             let a = stack.pop().unwrap();

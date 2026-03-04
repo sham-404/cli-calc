@@ -1,13 +1,44 @@
+// #[derive(Debug, Clone, PartialEq)]
+// pub enum AngleUnit {
+//     Degree,
+//     Radian,
+// }
+
+// impl AngleUnit {
+//     pub fn match_angle_unit(item: &str) -> Result<AngleUnit, String> {
+//         let unit = match item {
+//             "rad" | "radian" | "" => AngleUnit::Radian,
+//             "deg" | "degree" => AngleUnit::Degree,
+//             _ => return Err(String::from("Invalid Trig notation")),
+//         };
+//
+//         Ok(unit)
+//     }
+//
+//     pub fn convert(&self, val: f64) -> f64 {
+//         match self {
+//             Self::Degree => val.to_radians(),
+//             Self::Radian => val,
+//         }
+//     }
+// }
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Number(f64),
+
+    Deg,
+    Rad,
+
     Plus,
     Minus,
     Mul,
     Div,
     Pow,
+
     LParan,
     RParan,
+
     Sin,
     Cos,
     Tan,
@@ -33,6 +64,7 @@ impl Token {
                 | Token::Cosec
         )
     }
+
     pub fn is_trig(&self) -> bool {
         matches!(
             self,
@@ -52,6 +84,10 @@ impl Token {
             "cot" => Token::Cot,
             "cosec" => Token::Cosec,
             "sec" => Token::Sec,
+
+            "degree" | "deg" => Token::Deg,
+            "radian" | "rad" => Token::Rad,
+
             _ => return Err("Invalid Named function".to_string()),
         };
         Ok(token)
