@@ -209,21 +209,38 @@ pub fn eval_postfix(postfix: &[Token]) -> f64 {
                     _ => panic!("Invalid usage of Trig functions"),
                 };
 
-                if matches!(stack.last().unwrap(), Token::Deg | Token::Rad) {
-                    let unit = stack.pop().unwrap();
-
-                    let val = match unit {
-                        Token::Deg => match num {
-                            Token::Number(n) => Token::Number(n.to_radians()),
-                            _ => panic!("Expected number inside Trig fn"),
-                        },
-                        Token::Rad => num,
-                        _ => panic!("Expected number inside Trig fn"),
-                    };
-                    num = val;
-                }
+                // if matches!(stack.last().unwrap(), Token::Deg | Token::Rad) {
+                //     let unit = stack.pop().unwrap();
+                //
+                //     let val = match unit {
+                //         Token::Deg => match num {
+                //             Token::Number(n) => Token::Number(n.to_radians()),
+                //             _ => panic!("Expected number inside Trig fn"),
+                //         },
+                //         Token::Rad => num,
+                //         _ => panic!("Expected number inside Trig fn"),
+                //     };
+                //     num = val;
+                // }
 
                 stack.push(compute_trig(&num, &ch));
+                continue;
+            } else if matches!(ch, Token::Deg | Token::Rad) {
+                let num = match stack.pop().unwrap() {
+                    Token::Number(n) => Token::Number(n),
+                    _ => panic!("Invalid usage of Trig functions"),
+                };
+
+                let val = match ch {
+                    Token::Deg => match num {
+                        Token::Number(n) => Token::Number(n.to_radians()),
+                        _ => panic!("Expected number inside Trig fn"),
+                    },
+                    Token::Rad => num,
+                    _ => panic!("Expected number inside Trig fn"),
+                };
+
+                stack.push(val);
                 continue;
             }
             let a = stack.pop().unwrap();

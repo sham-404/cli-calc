@@ -51,6 +51,8 @@ fn calculate(exp: &String, param: &str) {
     };
 
     let postfix = to_postfix(&parsed);
+
+    println!("Postfix: {postfix:?}");
     let res = eval_postfix(&postfix);
 
     println!("{res}");
